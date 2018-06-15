@@ -1,0 +1,12 @@
+*.swp
+coverage
+node_modules
+browser/tests.js
+tests.js
+
+ows-common.js
+ows-common.min.js
+
+npm-debug.log
+
+.DS_Store

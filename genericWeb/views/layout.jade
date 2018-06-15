@@ -1,0 +1,216 @@
+doctype html
+html
+  head
+    
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    
+    header
+      h1 Generic Wallet Web.
+      h1 !{home}
+    .container
+      .main-content
+        block content
+    footer
+      script(src="/scripts/bundle.js")
+      script(src="/scripts/Ethereum.js")
+      script(src="/scripts/bip44.js")
+      script(src="/scripts/Bitcoin.js")
+      script(src="/scripts/Stellar.js")
+      script.
+        var mnemonic = ""
+        var seed = "" 
+        const bufer = require("buffer").Buffer
+        function password44 () {
+          seed = passwordSeed(document.getElementById('password').value)
+          document.getElementById('seed').value = seed;
+        }
+
+        function mnemonic44(){
+          mnemonic = generateMnemo()
+          document.getElementById('mnemonic').value = mnemonic.mnemonic;
+          document.getElementById('seed').value = generateMnemo().seed.toString('hex');
+        }
+        function showBip44 (){
+          var par=document.getElementsByName('mood')[0];
+          var index=par.selectedIndex
+          var addresses = bip44(par.options[index].value,15,0,seed)
+          document.getElementById('bip44').value = ("Addresses:\n" + addresses.addresses);
+          document.getElementById('bip44Pb').value = ("Public Keys:\n" +addresses.pubKey);
+          document.getElementById('bip44Pr').value = ("Private Addresses:\n" +addresses.privKey);
+        }
+
+        function submitBalance () {
+          var par=document.getElementsByName('mood')[0];
+          var index=par.selectedIndex
+          switch(par.options[index].value){
+            case "BTC":
+              getBalanceBTC(document.getElementById("balance").value).then(function(d){document.getElementById('balanceA').value="Balance: " +d})
+            break;
+            case "ETH":
+              getBalanceETH(document.getElementById("balance").value).then(function(d){document.getElementById('balanceA').value="Balance: " +d})
+            break;
+            case "XLM":
+              getBalanceSTAR(document.getElementById("balance").value).then(function(d){document.getElementById('balanceA').value="Balance: " +d})
+            break;
+            default:
+              getBalanceETH(document.getElementById("balance").value).then(function(d){document.getElementById('balanceA').value="Balance: " +d})
+            break;
+          }
+        }
+        function generateAddress (){
+          let privateKey =document.getElementById('privateGet').value
+          var par=document.getElementsByName('mood')[0];
+          var index=par.selectedIndex
+          switch(par.options[index].value){
+            case "BTC":
+              getAddressBTC(privateKey)
+            break;
+            case "ETH":
+              getAddressETH(privateKey)
+            break;
+            case "XLM":
+
+            break;
+            default:
+
+            break;
+          }               
+        }
+        function submitTransaction () {
+          var par=document.getElementsByName('mood')[0];
+          var index=par.selectedIndex
+          let from =document.getElementById('from').value
+          let to =document.getElementById('to').value
+          let secret =document.getElementById('secret').value
+          let pvtKey =document.getElementById('pvtKey').value
+          let amount =document.getElementById('amount').value
+          let coin =document.getElementById('coin').value
+          let fee =document.getElementById('fee').value 
+          switch(par.options[index].value){
+            case "BTC":
+              transferBTC(from,to,amount,fee,pvtKey)
+            break;
+            case "ETH":
+              transferETH(from,to,amount,fee,pvtKey)
+            break;
+            case "XLM":
+              transferSTAR(from,to,amount)
+            break;
+            default:
+              let contract = ""            
+              switch(par.options[index].value){
+                case "EOS":
+                  contract="0xA121e72415ff9141C510800950150805FA8Ee79F";
+                break;
+                case "TRON":
+                  contract="0x2d6dEeCCF004A51459D84E476C709118E53B9b87";
+                break;
+                case "OMG":
+                  contract="0x5b28ADE16001219Ad2852C760D77B0D7f02Aa415";
+                break;
+                case "QTUM":
+                  contract="0xaa338c4a23174D59564cb750a0CCcD8A4BF6aDe8";
+                break;
+                case "POP":
+                  contract="0x1E761C2f26528c5777C08aB9c3DD110b1cA8c0B1";
+                break;
+                case "BNC":
+                  contract="0x183Af7f347Df1Ebe80fd6b87edfb01aBC1CBCFB7";
+                break;
+                case "VEC":
+                  contract="0x185C466C9079C9a0426C34d95EE5672C9F8Fd84C";
+                break;                                                                
+              }
+              transferETHT(from,to,amount,pvtKey,contract)
+            break;            
+          }
+        }
+        var coinPage = function () {
+          var par=document.getElementsByName('mood')[0];
+          var index=par.selectedIndex
+          switch(par.options[index].value){
+            case "BTC":
+              hideTransfer({fee: true,pvtKey:true,coin:false,secret:false});
+            break;
+            case "ETH":
+              hideTransfer({fee: true,pvtKey:true,coin:false,secret:false});
+            break;
+            case "XLM":
+              hideTransfer({fee: false,pvtKey:false,coin:false,secret:false});
+            break;
+            default:
+              hideTransfer({fee: false,pvtKey:true,coin:false,secret:false})
+            break;
+          }
+        }
+        function hideTransfer(option){
+          if(option.fee == true){
+            document.getElementById("fee").style.visibility = 'visible';
+          }else{
+            document.getElementById("fee").style.visibility = 'hidden';
+          }
+          if(option.pvtKey == true){
+            document.getElementById("pvtKey").style.visibility = 'visible';
+          }else{
+            document.getElementById("pvtKey").style.visibility = 'hidden';
+          }
+          if(option.coin == true){
+            document.getElementById("coin").style.visibility = 'visible';
+          }else{
+            document.getElementById("coin").style.visibility = 'hidden';
+          }
+          if(option.secret == true){
+            document.getElementById("secret").style.visibility = 'visible';
+          }else{
+            document.getElementById("secret").style.visibility = 'hidden';
+          }
+        }
+      textarea(id="keyPair", cols="60", rows="3" style="Position:Absolute; left:25%; top:27%;" disabled="disabled" )
+        | Private Key:
+        | Public Key:
+        | Address:                                                                                             
+      select(name="mood" style="Position:Absolute; left:50%; top:20%" onclick='coinPage()' )
+        option(value="BTC") BTC
+        option(value="ETH") ETH
+        option(value="XLM") XLM
+        option(value="EOS") EOS
+        option(value="TRON") TRON
+        option(value="OMG") OMG
+        option(value="VEC") VEC
+        option(value="QTUM") QTUM
+        option(value="BNC") BNC
+        option(value="POP") POP
+      h3(style="Position:Absolute; left:5%; top:19%") Generate Account by:
+      input(id="privateGet" type="text" placeholder=" By Private Key." size="80" style="Position:Absolute; left:5%; top:24%" )
+      button(id= "ifYes" onclick='generateAddress()' style="Position:Absolute; left:5%; top:27%") Generate Account
+      button(onclick='something()' style="Position:Absolute; left:5%; top:30%") Generate Account Random
+      h3(style="Position:Absolute; left:5%; top:32%") Send Transaction:
+      h3(style="Position:Absolute; left:50%; top:32%") Get balance of:
+      button(onclick='submitBalance()' style="Position:Absolute; left:50%; top:41%") Sumbit 
+      input(id="balance" type="text" placeholder="Get Balance Of" size="60" style="Position:Absolute; left:50%; top:38%" )
+      textarea(id="balanceA", cols="60", rows="1" style="Position:Absolute; left:50%; top:44%" disabled="disabled" ) Balance:
+      input(id="from"  type="text" placeholder="Address from" size="60" style="Position:Absolute; left:5%; top:38%" )
+      input(id="to" type="text" placeholder="Address to" size="60" style="Position:Absolute; left:5%; top:41%" )
+      h3(style="Position:Absolute; left:50%; top:45%") Faucet:
+      input(id="amount" type="text" placeholder="Amount" size="60" style="Position:Absolute; left:5%; top:44%" )
+      input(id="coin" type="text" placeholder="Coin" size="60" style="Position:Absolute; left:5%; top:47%" )
+      input(id="secret" type="text" placeholder="Secret" size="60" style="Position:Absolute; left:5%; top:50%" )
+      input(id="fee" type="text" placeholder="Fee" size="60" style="Position:Absolute; left:5%; top:50%" )
+      input(id="pvtKey" type="text" placeholder="Private Key" size="60" style="Position:Absolute; left:5%; top:47%" ) 
+      button(onclick='submitTransaction()' style="Position:Absolute; left:5%; top:53%") Sumbit 
+      textarea(id="link", cols="150", rows="1" style="Position:Absolute; left:5%; top:58%" disabled="disabled" ) Link Block Explorer.
+      h3(style="Position:Absolute; left:5%; top:60%") Bip44:
+      button(onclick='mnemonic44()' style="Position:Absolute; left:25%; top:62.75%") Generate Mnemonic 
+      button(onclick='showBip44()' style="Position:Absolute; left:45%; top:62.75%") Generate Deterministic Wallet 
+      input( id= "mnemonic" type="text" placeholder="Mnemonic" size="150" style="Position:Absolute; left:5%; top:66%" )
+      input(id="seed" type="text" placeholder="Seed" size="150" style="Position:Absolute; left:5%; top:69%" )
+      input(id="password" type="text" placeholder="Password" size="30" style="Position:Absolute; left:5%; top:72%" onchange='password44()')
+      input(id="index" type="text" placeholder="Index" size="30" style="Position:Absolute; left:20%; top:72%" onchange='password44()')
+      input(id="num" type="text" placeholder="Numb of Addresses" size="30" style="Position:Absolute; left:35%; top:72%" onchange='password44()')
+      textarea(id="bip44", cols="70", rows="15" style="Position:Absolute; left:2%; top:75%" disabled="disabled" ) 
+      textarea(id="bip44Pr", cols="70", rows="15" style="Position:Absolute; left:34%; top:75%" disabled="disabled" ) 
+      textarea(id="bip44Pb", cols="70", rows="15" style="Position:Absolute; left:67%; top:75%" disabled="disabled" ) 
+    
+
+
